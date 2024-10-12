@@ -14,7 +14,7 @@ import os
 import smtplib
 import pip._vendor.requests
 # Import your forms from the forms.py
-from forms import CreatePostForm,RegisterUser,LoginUser, CommentPostForm
+from api.forms import CreatePostForm,RegisterUser,LoginUser, CommentPostForm
 
 '''
 Make sure the required packages are installed: 
