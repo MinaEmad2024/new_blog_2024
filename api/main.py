@@ -1,6 +1,6 @@
 from datetime import date
 import werkzeug
-from flask import Flask, abort, render_template, redirect, url_for, flash
+from flask import Flask, abort, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
 from flask_gravatar import Gravatar
@@ -11,8 +11,10 @@ from sqlalchemy import Integer, String, Text
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
+import smtplib
+import pip._vendor.requests
 # Import your forms from the forms.py
-from forms import CreatePostForm,RegisterUser,LoginUser, CommentPostForm
+from api.forms import CreatePostForm,RegisterUser,LoginUser, CommentPostForm
 
 '''
 Make sure the required packages are installed: 
@@ -28,7 +30,7 @@ This will install the packages from the requirements.txt for this project.
 '''
 admin = False
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b' #os.environ.get('FLASK_KEY')
+app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY') #'8BYkEfBA6O6donzWlSihBXox7C0sKR6b' #os.environ.get('FLASK_KEY')
 ckeditor = CKEditor(app)
 ckeditor.autoParagraph = False;
 ckeditor.enterMode = 2
@@ -51,7 +53,7 @@ class Base(DeclarativeBase):
     pass
 
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'  # os.environ.get("DB_URI", "sqlite:///posts.db") #'sqlite:///posts.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///posts.db") #'sqlite:///posts.db'  # os.environ.get("DB_URI", "sqlite:///posts.db") #'sqlite:///posts.db'
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
@@ -287,9 +289,28 @@ def about():
     return render_template("about.html")
 
 
-@app.route("/contact")
+@app.route("/contact", methods=['GET', 'POST']))
 def contact():
-    return render_template("contact.html")
+    if request.method == "POST": 
+        data = request.form   
+        my_email = "minamaestro2023@gmail.com"
+        password = "tjyi kzjq iwbe jndg"
+        email = data['email']
+        name =data['name']
+        phone = data['phone']
+        subject = data['message']
+        connection = smtplib.SMTP("smtp.gmail.com", 587, timeout=120)
+        connection.ehlo()
+        connection.starttls()
+        connection.login(user=my_email, password=password)
+        connection.sendmail(from_addr=my_email,
+                            to_addrs="drmina2007@yahoo.com",
+                            msg=f"subject:This is message from {name}\n\n sender phone no. : {phone}\n sender email : {email}\n {subject}"
+                            )
+        connection.close()
+        return render_template("contact.html", msg_sent=True)
+
+    return render_template("contact.html", msg_sent=False)
 
 
 if __name__ == "__main__":
