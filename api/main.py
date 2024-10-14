@@ -190,7 +190,7 @@ def admin_only():
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            if admin == False:
+            if current_user.id != 1:
                 abort(403)
             return f(*args, **kwargs)
         return decorated_function
